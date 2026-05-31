@@ -265,7 +265,7 @@ const DATA_LOP2={
 // --- Chủ đề 1: Số đến 1000 ---
 const BAI_TAP_THEM_L2_SO = [
   {id:'l2sx_01',loai:'dung_sai',cau:'Số 305 có hàng chục là 0',dapAn:true,goiY:'3-0-5: trăm=3, chục=0, đơn vị=5'},
-  {id:'l2sx_02',loai:'dung_sai',cau:'500 + 60 + 7 = 576',dapAn:true,goiY:'5 trăm + 6 chục + 7 đơn vị = 567... thực ra là 567 không phải 576. Sai!'},
+  {id:'l2sx_02',loai:'dung_sai',cau:'500 + 60 + 7 = 576',dapAn:false,goiY:'500+60+7=567, không phải 576 → phát biểu này SAI!'},
   {id:'l2sx_03',loai:'dung_sai',cau:'Số 999 là số lớn nhất có 3 chữ số',dapAn:true,goiY:'999 = 9 trăm 9 chục 9 đơn vị, không thể lớn hơn nữa trong 3 chữ số'},
   {id:'l2sx_04',loai:'dung_sai',cau:'700 < 699',dapAn:false,goiY:'700 > 699 (7 trăm > 6 trăm)'},
   {id:'l2sx_05',loai:'chon_nhieu',cau:'Số nào có hàng trăm là 4?',dapAn:['405','472','489'],luaChon:['405','472','489','344','540']},
