@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BoMath – Bài Tập</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo">Bo<span>Math</span></a>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button class="btn-doi-bai" onclick="doiBai()" title="Đổi chủ đề">← Đổi bài</button>
+    <button class="nut-am-thanh" id="nut-am-thanh" onclick="batTatAmThanh()">🔊</button>
+    <div class="navbar-koko">⭐ <span id="koko-diem">0</span> KoKo</div>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="page-header animate-in">
+    <h1 id="tieu-de-bai-tap">Bài Tập</h1>
+    <p>Trả lời 6 câu hỏi — con làm được! 💪</p>
+  </div>
+  <div class="animate-in" style="margin-bottom:20px;">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="bar-bai-tap" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="label-bai-tap">Câu 1 / 6</div>
+  </div>
+  <div id="khu-vuc-cau-hoi"></div>
+
+  <!-- Màn hình kết quả -->
+  <div id="khu-vuc-ket-qua" style="display:none;">
+    <div class="card animate-in">
+      <div class="ket-qua-box">
+        <div style="font-size:3.5rem;" id="ket-qua-emoji">🎉</div>
+        <h2 style="font-size:1.7rem;font-weight:900;margin:12px 0;" id="ket-qua-tieu-de">Hoàn thành!</h2>
+        <div class="sao-container" id="ket-qua-sao">☆☆☆</div>
+        <p style="color:#6b6b6b;font-size:1.1rem;" id="ket-qua-chi-tiet">0/6 câu đúng</p>
+        <div class="diem-koko" id="ket-qua-koko">+<span>0</span> KoKo!</div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px;">
+          <button class="btn btn-phu" onclick="lamLai()">🔄 Làm lại</button>
+          <button class="btn btn-outline" onclick="doiBai()">📚 Đổi bài</button>
+          <a href="index.html" class="btn btn-chinh">🏠 Trang chủ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL CHỌN BÀI -->
+<div class="modal-overlay" id="modal-chu-de" onclick="dongModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="modal-tieu-de">Chọn chủ đề</span>
+      <button class="modal-close" onclick="dongModalBtn()">✕</button>
+    </div>
+    <div class="chu-de-grid" id="danh-sach-chu-de"></div>
+  </div>
+</div>
+
+<script src="data/grade2.js"></script>
+<script src="data/grade3.js"></script>
+<script src="data/grade4.js"></script>
+<script src="data/grade4.js"></script>
+<script src="data/grade5.js"></script>
+<script src="app.js"></script>
+<script>
+  const lopHienTai = layLopHienTai();
+  const chuDeId    = layChuDeHienTai();
+
+  // Lấy đúng bài tập và thông tin chủ đề
+  let tatCaCauHoi, chuDe, tenBaiTap, dsChuDeLop;
+  function khoiTaoDuLieu() {
+    let cd, info;
+    if (lopHienTai==='lop2') {
+      dsChuDeLop=CHU_DE_LOP2; cd=DATA_LOP2[chuDeId]||Object.values(DATA_LOP2)[0];
+      info=CHU_DE_LOP2.find(x=>x.id===chuDeId);
+    } else if (lopHienTai==='lop3') {
+      dsChuDeLop=CHU_DE_LOP3; cd=DATA_LOP3[chuDeId]||Object.values(DATA_LOP3)[0];
+      info=CHU_DE_LOP3.find(x=>x.id===chuDeId);
+    } else if (lopHienTai==='lop4') {
+      dsChuDeLop=CHU_DE_LOP4; cd=DATA_LOP4[chuDeId]||Object.values(DATA_LOP4)[0];
+      info=CHU_DE_LOP4.find(x=>x.id===chuDeId);
+    } else {
+      dsChuDeLop=CHU_DE_LOP5; cd=DATA_LOP5[chuDeId]||Object.values(DATA_LOP5)[0];
+      info=CHU_DE_LOP5.find(x=>x.id===chuDeId);
+    }
+    tatCaCauHoi = cd.baiTap;
+    chuDe       = chuDeId;
+    tenBaiTap   = `${info?.icon||'📝'} ${info?.ten||'Bài Tập'}`;
+  }
+
+  // Trạng thái làm bài
+  const SO_CAU_MOI_LUOT = 6;  // Tăng từ 5 lên 6 câu mỗi lượt
+  let chuoiCauHoi, cauHienTai, soCauDung, daTrLoi;
+  let danhSachDaChon = [];     // Cho dạng chọn nhiều
+
+  function khoiTaoLuot() {
+    chuoiCauHoi  = xaoTron(tatCaCauHoi).slice(0, SO_CAU_MOI_LUOT);
+    cauHienTai   = 0;
+    soCauDung    = 0;
+    daTrLoi      = false;
+    danhSachDaChon = [];
+  }
+
+  // ============================================================
+  // RENDER CÂU HỎI THEO TỪNG DẠNG
+  // ============================================================
+  function hienThiCauHoi(idx) {
+    daTrLoi = false;
+    danhSachDaChon = [];
+    const cauHoi  = chuoiCauHoi[idx];
+    const tongCau = chuoiCauHoi.length;
+    const pt = Math.round((idx/tongCau)*100);
+    document.getElementById('bar-bai-tap').style.width   = pt+'%';
+    document.getElementById('label-bai-tap').textContent = `Câu ${idx+1} / ${tongCau}`;
+
+    const khuVuc = document.getElementById('khu-vuc-cau-hoi');
+    const btnLabel = idx<tongCau-1 ? 'Câu tiếp theo →' : '🏁 Xem kết quả';
+
+    switch(cauHoi.loai) {
+      case 'trac_nghiem': khuVuc.innerHTML = renderTracNghiem(cauHoi, idx, btnLabel); break;
+      case 'dien_so':     khuVuc.innerHTML = renderDienSo(cauHoi, idx, btnLabel);     break;
+      case 'dung_sai':    khuVuc.innerHTML = renderDungSai(cauHoi, idx, btnLabel);    break;
+      case 'chon_nhieu':  khuVuc.innerHTML = renderChonNhieu(cauHoi, idx, btnLabel);  break;
+      default:            khuVuc.innerHTML = renderTracNghiem(cauHoi, idx, btnLabel);
+    }
+  }
+
+  // --- Dạng 1: Trắc nghiệm ---
+  function renderTracNghiem(c, idx, btnLabel) {
+    const lc = xaoTron(c.luaChon);
+    return `<div class="question-box animate-in">
+      <div class="question-number">Câu ${idx+1} · Trắc nghiệm</div>
+      <div class="question-text">${c.cau}</div>
+      <div class="choices">
+        ${lc.map(l=>`<button class="choice-btn"
+          onclick="chonTN(this,'${esc(l)}','${esc(c.dapAn)}')">${l}</button>`).join('')}
+      </div>
+      <div class="feedback" id="feedback-box"></div>
+      <div style="margin-top:18px;display:none;" id="btn-tiep-cau">
+        <button class="btn btn-chinh btn-full" onclick="cauTiep()">${btnLabel}</button>
+      </div>
+    </div>`;
+  }
+
+  // --- Dạng 2: Điền số ---
+  function renderDienSo(c, idx, btnLabel) {
+    return `<div class="question-box animate-in">
+      <div class="question-number">Câu ${idx+1} · Điền số</div>
+      <div class="question-text">${c.cau}</div>
+      <p style="color:#6b6b6b;font-size:1rem;margin-bottom:18px;">💬 ${c.goiY}</p>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <input type="number" inputmode="decimal" class="input-dap-an"
+               id="input-dap-an" placeholder="?"
+               onkeydown="if(event.key==='Enter')kiemTraDienSo()"/>
+        <button class="btn btn-chinh" onclick="kiemTraDienSo()">Kiểm tra ✓</button>
+      </div>
+      <div class="feedback" id="feedback-box"></div>
+      <div style="margin-top:18px;display:none;" id="btn-tiep-cau">
+        <button class="btn btn-chinh btn-full" onclick="cauTiep()">${btnLabel}</button>
+      </div>
+    </div>`;
+  }
+
+  // --- Dạng 3: Đúng / Sai ---
+  function renderDungSai(c, idx, btnLabel) {
+    // dapAn: true hoặc false (boolean hoặc string 'true'/'false')
+    return `<div class="question-box animate-in">
+      <div class="question-number">Câu ${idx+1} · Đúng hay Sai?</div>
+      <div class="question-text">${c.cau}</div>
+      <div class="dung-sai-container">
+        <button class="ds-btn dung-opt" onclick="chonDungSai(this, true, ${c.dapAn})">✅ Đúng</button>
+        <button class="ds-btn sai-opt"  onclick="chonDungSai(this, false, ${c.dapAn})">❌ Sai</button>
+      </div>
+      <div class="feedback" id="feedback-box"></div>
+      <div style="margin-top:18px;display:none;" id="btn-tiep-cau">
+        <button class="btn btn-chinh btn-full" onclick="cauTiep()">${btnLabel}</button>
+      </div>
+    </div>`;
+  }
+
+  // --- Dạng 4: Chọn nhiều ---
+  function renderChonNhieu(c, idx, btnLabel) {
+    // c.dapAn là mảng string, c.luaChon là mảng string
+    const lc = xaoTron(c.luaChon);
+    return `<div class="question-box animate-in">
+      <div class="question-number">Câu ${idx+1} · Chọn tất cả đáp án đúng</div>
+      <div class="question-text">${c.cau}</div>
+      <p style="font-size:.9rem;color:#6b6b6b;margin-bottom:14px;">💡 Có thể chọn nhiều đáp án</p>
+      <div class="chon-nhieu-choices" id="cn-choices">
+        ${lc.map(l=>`
+          <button class="cn-btn" data-val="${esc(l)}" onclick="batTatChonNhieu(this)">
+            <span class="cn-check"></span><span>${l}</span>
+          </button>`).join('')}
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-chinh btn-full cn-submit" onclick="kiemTraChonNhieu('${esc(JSON.stringify(c.dapAn))}')">
+          Kiểm tra ✓
+        </button>
+      </div>
+      <div class="feedback" id="feedback-box"></div>
+      <div style="margin-top:18px;display:none;" id="btn-tiep-cau">
+        <button class="btn btn-chinh btn-full" onclick="cauTiep()">${btnLabel}</button>
+      </div>
+    </div>`;
+  }
+
+  // ============================================================
+  // XỬ LÝ TRẢ LỜI
+  // ============================================================
+  function esc(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+  function chonTN(el, daChon, dapAnDung) {
+    if (daTrLoi) return; daTrLoi = true;
+    const laDung = daChon === dapAnDung;
+    document.querySelectorAll('.choice-btn').forEach(b=>{
+      if(b.textContent.trim()===dapAnDung) b.classList.add('dung');
+      else if(b===el && !laDung) b.classList.add('sai');
+      b.style.cursor='default';
+    });
+    el.classList.add(laDung?'bounce':'shake');
+    if(laDung) amDung(); else amSai();
+    hienThiFeedback(laDung, dapAnDung);
+    if(laDung) soCauDung++;
+    document.getElementById('btn-tiep-cau').style.display='block';
+  }
+
+  function kiemTraDienSo() {
+    if(daTrLoi) return;
+    const input    = document.getElementById('input-dap-an');
+    const daNhap   = parseFloat(input.value);
+    const dapAnDung = chuoiCauHoi[cauHienTai].dapAn;
+    if(isNaN(daNhap)){ input.focus(); return; }
+    daTrLoi = true;
+    const laDung = Math.abs(daNhap - dapAnDung) < 0.001;
+    input.classList.add(laDung?'dung':'sai'); input.disabled=true;
+    input.classList.add(laDung?'bounce':'shake');
+    if(laDung) amDung(); else amSai();
+    hienThiFeedback(laDung, dapAnDung);
+    if(laDung) soCauDung++;
+    document.getElementById('btn-tiep-cau').style.display='block';
+  }
+
+  function chonDungSai(el, daChon, dapAnDung) {
+    if(daTrLoi) return; daTrLoi = true;
+    // dapAnDung từ HTML là number 0/1 hoặc true/false
+    const laDung = (daChon === (dapAnDung===1||dapAnDung===true));
+    document.querySelectorAll('.ds-btn').forEach(b=>{ b.disabled=true; b.style.cursor='default'; });
+    el.classList.add(laDung?'ket-dung':'ket-sai');
+    el.classList.add(laDung?'bounce':'shake');
+    if(laDung) amDung(); else amSai();
+    const dapAnChuoi = (dapAnDung===1||dapAnDung===true) ? '✅ Đúng' : '❌ Sai';
+    hienThiFeedback(laDung, dapAnChuoi);
+    if(laDung) soCauDung++;
+    document.getElementById('btn-tiep-cau').style.display='block';
+  }
+
+  function batTatChonNhieu(el) {
+    if(daTrLoi) return;
+    const val = el.dataset.val;
+    el.classList.toggle('selected');
+    if(el.classList.contains('selected')) {
+      danhSachDaChon.push(val);
+      el.querySelector('.cn-check').textContent='✓';
+    } else {
+      danhSachDaChon = danhSachDaChon.filter(v=>v!==val);
+      el.querySelector('.cn-check').textContent='';
+    }
+  }
+
+  function kiemTraChonNhieu(dapAnJSON) {
+    if(daTrLoi) return;
+    let dapAnDung;
+    try { dapAnDung = JSON.parse(dapAnJSON.replace(/&quot;/g,'"')); } catch(e){ dapAnDung=[]; }
+    daTrLoi = true;
+
+    // So sánh 2 mảng không phụ thuộc thứ tự
+    const daChonSort   = [...danhSachDaChon].sort().join('|');
+    const dapAnSort    = [...dapAnDung].sort().join('|');
+    const laDung       = daChonSort === dapAnSort;
+
+    // Tô màu từng lựa chọn
+    document.querySelectorAll('.cn-btn').forEach(b=>{
+      b.classList.add('da-khoa'); b.style.cursor='default';
+      const val = b.dataset.val;
+      const laDungLuaChon = dapAnDung.includes(val);
+      const daChon        = danhSachDaChon.includes(val);
+      if(laDungLuaChon)               { b.classList.add('ket-dung'); b.querySelector('.cn-check').textContent='✓'; }
+      else if(daChon && !laDungLuaChon){ b.classList.add('ket-sai');  b.querySelector('.cn-check').textContent='✗'; }
+    });
+    document.querySelector('.cn-submit').style.display='none';
+
+    if(laDung) amDung(); else amSai();
+    hienThiFeedback(laDung, dapAnDung.join(', '));
+    if(laDung) soCauDung++;
+    document.getElementById('btn-tiep-cau').style.display='block';
+  }
+
+  function hienThiFeedback(laDung, dapAnDung) {
+    const hop = document.getElementById('feedback-box');
+    hop.className = 'feedback '+(laDung?'dung':'sai');
+    hop.innerHTML = laDung
+      ? '✅ Chính xác! Giỏi quá! +10 KoKo 🎉'
+      : `❌ Chưa đúng! Đáp án: <strong>${dapAnDung}</strong> — Cố lên! 💪`;
+  }
+
+  function cauTiep() {
+    cauHienTai++;
+    if(cauHienTai < chuoiCauHoi.length){ hienThiCauHoi(cauHienTai); window.scrollTo({top:0,behavior:'smooth'}); }
+    else hienThiKetQua();
+  }
+
+  function hienThiKetQua() {
+    const tongCau = chuoiCauHoi.length;
+    const ketQua  = luuTienDo(lopHienTai, chuDe, soCauDung, tongCau);
+    document.getElementById('khu-vuc-cau-hoi').style.display ='none';
+    document.getElementById('bar-bai-tap').style.width        ='100%';
+    document.getElementById('label-bai-tap').textContent      ='Hoàn thành! 🎊';
+    document.getElementById('khu-vuc-ket-qua').style.display  ='block';
+    let emoji, tieuDe;
+    if     (ketQua.sao===3){ emoji='🏆'; tieuDe='Xuất sắc! 3 sao! 🌟'; tungConfetti(); }
+    else if(ketQua.sao===2){ emoji='🎉'; tieuDe='Làm tốt lắm! 👏'; amKoKo(); }
+    else if(ketQua.sao===1){ emoji='💪'; tieuDe='Cố gắng thêm nhé!'; }
+    else                   { emoji='😊'; tieuDe='Thử lại nhé, con làm được!'; }
+    document.getElementById('ket-qua-emoji').textContent   = emoji;
+    document.getElementById('ket-qua-tieu-de').textContent = tieuDe;
+    document.getElementById('ket-qua-sao').textContent     = hienThiSao(ketQua.sao);
+    document.getElementById('ket-qua-chi-tiet').textContent= `${soCauDung}/${tongCau} câu đúng`;
+    document.getElementById('ket-qua-koko').innerHTML      = `+<span>${ketQua.koko}</span> KoKo!`;
+    capNhatHienThiKoKo();
+  }
+
+  function lamLai() {
+    khoiTaoLuot();
+    document.getElementById('khu-vuc-ket-qua').style.display='none';
+    document.getElementById('khu-vuc-cau-hoi').style.display='block';
+    hienThiCauHoi(0);
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  /* ---- Đổi bài ---- */
+  function doiBai(){
+    amBamNut();
+    const data   = layDuLieu();
+    const tenLop = {'lop2':'🌟 Lớp 2','lop3':'🔢 Lớp 3','lop4':'📗 Lớp 4','lop5':'🚀 Lớp 5'}[lopHienTai];
+    document.getElementById('modal-tieu-de').textContent = tenLop+' — Chọn chủ đề';
+    document.getElementById('danh-sach-chu-de').innerHTML = dsChuDeLop.map(cd=>{
+      const td=data[lopHienTai]?.[cd.id]; const sao=td?hienThiSao(td.saoTot):'☆☆☆';
+      return `<div class="chu-de-card" onclick="chonChuDeVaoExercise('${cd.id}')">
+        <div class="chu-de-icon">${cd.icon}</div>
+        <div class="chu-de-ten">${cd.ten}</div>
+        <div class="chu-de-sao">${sao}</div></div>`;
+    }).join('');
+    document.getElementById('modal-chu-de').classList.add('hien');
+    document.body.style.overflow='hidden';
+  }
+  function chonChuDeVaoExercise(id){
+    amChuyenTrang();
+    sessionStorage.setItem('chu_de_hien_tai',id);
+    document.getElementById('modal-chu-de').classList.remove('hien');
+    document.body.style.overflow='';
+    location.reload();
+  }
+  function dongModal(e){ if(e.target===document.getElementById('modal-chu-de')) dongModalBtn(); }
+  function dongModalBtn(){ document.getElementById('modal-chu-de').classList.remove('hien'); document.body.style.overflow=''; }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    capNhatHienThiKoKo(); capNhatNutAmThanh();
+    khoiTaoDuLieu();
+    khoiTaoLuot();
+    document.getElementById('tieu-de-bai-tap').textContent = tenBaiTap;
+    hienThiCauHoi(0);
+  });
+</script>
+</body>
+</html>

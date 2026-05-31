@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BoMath – Tiến Độ</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo">Bo<span>Math</span></a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="nut-am-thanh" id="nut-am-thanh" onclick="batTatAmThanh()">🔊</button>
+    <div class="navbar-koko">⭐ <span id="koko-diem">0</span> KoKo</div>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="page-header animate-in">
+    <h1>📊 Tiến Độ</h1>
+    <p>Kết quả học tập của con</p>
+  </div>
+
+  <div class="card animate-in" style="background:linear-gradient(135deg,#ff6b35,#ffd166);
+       border-left-color:white;color:white;text-align:center;padding:28px 20px;">
+    <div style="font-size:2.4rem;">⭐</div>
+    <div style="font-size:.95rem;font-weight:600;opacity:.9;margin:4px 0;">Tổng điểm KoKo</div>
+    <div style="font-size:3rem;font-weight:900;" id="tong-koko">0</div>
+    <div style="font-size:.85rem;opacity:.85;margin-top:6px;">Mỗi câu đúng +10 · Hoàn thành +20 · Tuyệt đối +50 🎯</div>
+  </div>
+
+  <div id="tien-do-lop2" class="animate-in"></div>
+  <div id="tien-do-lop3" class="animate-in" style="margin-top:8px;"></div>
+  <div id="tien-do-lop4" class="animate-in" style="margin-top:8px;"></div>
+  <div id="tien-do-lop5" class="animate-in" style="margin-top:8px;"></div>
+
+  <div class="card animate-in" style="margin-top:8px;">
+    <div class="card-title">Hệ thống đánh giá</div>
+    <table style="width:100%;border-collapse:collapse;font-size:1rem;">
+      <tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:11px 0;font-size:1.3rem;">⭐⭐⭐</td>
+        <td style="padding:11px 8px;font-weight:800;">Xuất sắc</td>
+        <td style="color:#6b6b6b;">6/6 câu đúng</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:11px 0;font-size:1.3rem;">⭐⭐☆</td>
+        <td style="padding:11px 8px;font-weight:800;">Tốt</td>
+        <td style="color:#6b6b6b;">4–5/6 câu đúng</td>
+      </tr>
+      <tr>
+        <td style="padding:11px 0;font-size:1.3rem;">⭐☆☆</td>
+        <td style="padding:11px 8px;font-weight:800;">Cần cố gắng</td>
+        <td style="color:#6b6b6b;">1–3/6 câu đúng</td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+    <a href="index.html" class="btn btn-chinh">🏠 Trang chủ</a>
+    <button class="btn btn-outline" onclick="xacNhanXoa()" style="font-size:.9rem;">🗑️ Reset dữ liệu</button>
+  </div>
+</main>
+
+<script src="data/grade2.js"></script>
+<script src="data/grade3.js"></script>
+<script src="data/grade4.js"></script>
+<script src="data/grade5.js"></script>
+<script src="app.js"></script>
+<script>
+  const CFG = {
+    lop2: { ds:()=>CHU_DE_LOP2, ten:'🌟 Lớp 2', mau:'linear-gradient(90deg,#118ab2,#06d6a0)', lopKey:'lop2' },
+    lop3: { ds:()=>CHU_DE_LOP3, ten:'🔢 Lớp 3', mau:'linear-gradient(90deg,#ff6b35,#ffd166)', lopKey:'lop3' },
+    lop4: { ds:()=>CHU_DE_LOP4, ten:'📗 Lớp 4', mau:'linear-gradient(90deg,#06d6a0,#118ab2)',  lopKey:'lop4' },
+    lop5: { ds:()=>CHU_DE_LOP5, ten:'🚀 Lớp 5', mau:'linear-gradient(90deg,#7c4dff,#ef476f)', lopKey:'lop5' },
+  };
+
+  function renderLop(lopKey, containerId) {
+    const cfg  = CFG[lopKey];
+    const data = layDuLieu();
+    const dsChuDe = cfg.ds();
+    const el   = document.getElementById(containerId);
+    el.innerHTML = `<h2 style="font-size:1.15rem;font-weight:900;margin-bottom:14px;">${cfg.ten}</h2>` +
+      dsChuDe.map(cd => {
+        const td  = data[lopKey]?.[cd.id];
+        const sao = td ? td.saoTot : 0;
+        const pt  = td ? Math.round((sao/3)*100) : 0;
+        const info= td ? `${td.lanLam} lượt · Kỷ lục: ${hienThiSao(sao)}` : 'Chưa học';
+        return `<div class="topic-card">
+          <div class="topic-icon">${cd.icon}</div>
+          <div class="topic-info">
+            <div class="topic-name">${cd.ten}</div>
+            <div class="topic-sao">${hienThiSao(sao)}</div>
+            <div class="progress-bar-wrap" style="margin:6px 0 4px;">
+              <div class="progress-bar-fill" style="width:${pt}%;background:${cfg.mau}"></div>
+            </div>
+            <div style="font-size:.82rem;color:#6b6b6b;">${info}</div>
+          </div>
+          <a href="lesson.html" class="btn btn-chinh"
+             style="padding:10px 14px;font-size:.88rem;white-space:nowrap;background:${cd.mauSac};"
+             onclick="sessionStorage.setItem('lop_hien_tai','${lopKey}');
+                      sessionStorage.setItem('chu_de_hien_tai','${cd.id}')">
+            Học →
+          </a>
+        </div>`;
+      }).join('');
+  }
+
+  function xacNhanXoa() {
+    if(confirm('⚠️ Xóa toàn bộ dữ liệu?\nKhông thể hoàn tác!')) {
+      localStorage.removeItem('bomath_data');
+      alert('✅ Đã xóa. Bắt đầu lại nhé!');
+      location.reload();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    capNhatHienThiKoKo(); capNhatNutAmThanh();
+    document.getElementById('tong-koko').textContent = formatSo(layDuLieu().koko);
+    renderLop('lop2','tien-do-lop2');
+    renderLop('lop3','tien-do-lop3');
+    renderLop('lop4','tien-do-lop4');
+    renderLop('lop5','tien-do-lop5');
+  });
+</script>
+</body>
+</html>

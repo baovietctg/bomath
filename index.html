@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BoMath – Học Toán Vui</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo">Bo<span>Math</span></a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="nut-am-thanh" id="nut-am-thanh" onclick="batTatAmThanh()">🔊</button>
+    <div class="navbar-koko">⭐ <span id="koko-diem">0</span> KoKo</div>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="page-header animate-in">
+    <h1>Hôm nay học lớp nào? 📚</h1>
+    <p>Chọn lớp của con để bắt đầu nhé!</p>
+  </div>
+
+  <div class="grade-cards">
+    <div class="grade-card lop2 grade-card-wide animate-in" onclick="choiLop('lop2')">
+      <span class="grade-icon">🌟</span>
+      <div class="grade-name">Lớp 2</div>
+      <div class="grade-topic">8 chủ đề · Số · Cộng · Trừ · Nhân · Chia · Hình học · Đo lường · Lời văn</div>
+    </div>
+    <div class="grade-card lop3 animate-in" onclick="choiLop('lop3')">
+      <span class="grade-icon">🔢</span>
+      <div class="grade-name">Lớp 3</div>
+      <div class="grade-topic">10 chủ đề đầy đủ</div>
+    </div>
+    <div class="grade-card lop4 animate-in" onclick="choiLop('lop4')">
+      <span class="grade-icon">📗</span>
+      <div class="grade-name">Lớp 4</div>
+      <div class="grade-topic">10 chủ đề đầy đủ</div>
+    </div>
+    <div class="grade-card lop5 animate-in" onclick="choiLop('lop5')">
+      <span class="grade-icon">🚀</span>
+      <div class="grade-name">Lớp 5</div>
+      <div class="grade-topic">10 chủ đề đầy đủ</div>
+    </div>
+  </div>
+
+  <div class="card animate-in">
+    <div class="card-title">📊 Thành tích</div>
+    <div id="bang-thanh-tich"></div>
+  </div>
+
+  <div style="text-align:center;margin-top:8px;">
+    <a href="progress.html" class="btn btn-outline">📈 Tiến độ chi tiết</a>
+  </div>
+</main>
+
+<!-- MODAL CHỌN CHỦ ĐỀ -->
+<div class="modal-overlay" id="modal-chu-de" onclick="dongModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="modal-tieu-de">Chọn chủ đề</span>
+      <button class="modal-close" onclick="dongModalBtn()">✕</button>
+    </div>
+    <div class="chu-de-grid" id="danh-sach-chu-de"></div>
+  </div>
+</div>
+
+<script src="data/grade2.js"></script>
+<script src="data/grade3.js"></script>
+<script src="data/grade4.js"></script>
+<script src="data/grade5.js"></script>
+<script src="app.js"></script>
+<script>
+  const MAP_LOP = {
+    lop2: { ds: ()=>CHU_DE_LOP2, ten:'🌟 Lớp 2', tongCD:8,  mau:'linear-gradient(90deg,#118ab2,#06d6a0)' },
+    lop3: { ds: ()=>CHU_DE_LOP3, ten:'🔢 Lớp 3', tongCD:10, mau:'linear-gradient(90deg,#ff6b35,#ffd166)' },
+    lop4: { ds: ()=>CHU_DE_LOP4, ten:'📗 Lớp 4', tongCD:10, mau:'linear-gradient(90deg,#06d6a0,#118ab2)' },
+    lop5: { ds: ()=>CHU_DE_LOP5, ten:'🚀 Lớp 5', tongCD:10, mau:'linear-gradient(90deg,#7c4dff,#ef476f)' },
+  };
+
+  function hienModalChuDe() {
+    const lop   = layLopHienTai();
+    const meta  = MAP_LOP[lop];
+    const data  = layDuLieu();
+    document.getElementById('modal-tieu-de').textContent = meta.ten + ' — Chọn chủ đề';
+    document.getElementById('danh-sach-chu-de').innerHTML = meta.ds().map(cd => {
+      const td = data[lop]?.[cd.id];
+      const sao = td ? hienThiSao(td.saoTot) : '☆☆☆';
+      return `<div class="chu-de-card" onclick="choiChuDe('${cd.id}')">
+        <div class="chu-de-icon">${cd.icon}</div>
+        <div class="chu-de-ten">${cd.ten}</div>
+        <div class="chu-de-sao">${sao}</div></div>`;
+    }).join('');
+    document.getElementById('modal-chu-de').classList.add('hien');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function dongModal(e){ if(e.target===document.getElementById('modal-chu-de')) dongModalBtn(); }
+  function dongModalBtn(){ document.getElementById('modal-chu-de').classList.remove('hien'); document.body.style.overflow=''; }
+
+  function hienThiThanhTich() {
+    const data = layDuLieu();
+    document.getElementById('bang-thanh-tich').innerHTML = Object.entries(MAP_LOP).map(([lop, meta]) => {
+      const keys = Object.keys(data[lop]||{});
+      const saoTB = keys.length ? Math.round(keys.reduce((s,k)=>s+(data[lop][k].saoTot||0),0)/keys.length) : 0;
+      const pt = Math.round(keys.length/meta.tongCD*100);
+      const badge = {'lop2':'badge-lop2','lop3':'badge-lop3','lop4':'badge-lop4','lop5':'badge-lop5'}[lop];
+      return `
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:800;"><span class="badge ${badge}">${meta.ten.split(' ')[1]}</span>
+              &nbsp;${keys.length}/${meta.tongCD} chủ đề</span>
+            <span style="font-size:1rem;letter-spacing:2px;">${hienThiSao(saoTB)}</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width:${pt}%;background:${meta.mau}"></div>
+          </div>
+          <div class="progress-label">${keys.length ? `Sao TB: ${hienThiSao(saoTB)}` : 'Chưa học'}</div>
+        </div>`;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    capNhatHienThiKoKo(); capNhatNutAmThanh(); hienThiThanhTich();
+  });
+</script>
+</body>
+</html>

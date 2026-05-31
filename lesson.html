@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BoMath – Bài Giảng</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-logo">Bo<span>Math</span></a>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button class="btn-doi-bai" onclick="doiBai()" title="Đổi chủ đề">← Đổi bài</button>
+    <button class="nut-am-thanh" id="nut-am-thanh" onclick="batTatAmThanh()">🔊</button>
+    <div class="navbar-koko">⭐ <span id="koko-diem">0</span> KoKo</div>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="page-header animate-in">
+    <h1 id="tieu-de-bai-giang">Đang tải...</h1>
+    <p id="mo-ta-lop" style="font-weight:700;color:#6b6b6b;"></p>
+  </div>
+  <div id="noi-dung-bai-giang"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:12px;">
+    <button class="btn btn-outline" id="btn-truoc" onclick="phanTruoc()" style="display:none;">← Trước</button>
+    <div style="flex:1"></div>
+    <button class="btn btn-chinh" id="btn-tiep" onclick="phanTiep()">Tiếp theo →</button>
+  </div>
+  <div style="margin-top:18px;">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="bar-giang" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="label-giang">Phần 1 / 3</div>
+  </div>
+</main>
+
+<!-- MODAL CHỌN BÀI (dùng lại khi bấm Đổi bài) -->
+<div class="modal-overlay" id="modal-chu-de" onclick="dongModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="modal-tieu-de">Chọn chủ đề</span>
+      <button class="modal-close" onclick="dongModalBtn()">✕</button>
+    </div>
+    <div class="chu-de-grid" id="danh-sach-chu-de"></div>
+  </div>
+</div>
+
+<script src="data/grade2.js"></script>
+<script src="data/grade3.js"></script>
+<script src="data/grade4.js"></script>
+<script src="data/grade4.js"></script>
+<script src="data/grade5.js"></script>
+<script src="app.js"></script>
+<script>
+  const lopHienTai = layLopHienTai();
+  const chuDeId    = layChuDeHienTai();
+
+  let baiGiang;
+  if      (lopHienTai==='lop2') baiGiang = DATA_LOP2[chuDeId]?.baiGiang || Object.values(DATA_LOP2)[0].baiGiang;
+  else if (lopHienTai==='lop3') baiGiang = DATA_LOP3[chuDeId]?.baiGiang || Object.values(DATA_LOP3)[0].baiGiang;
+  else if (lopHienTai==='lop4') baiGiang = DATA_LOP4[chuDeId]?.baiGiang || Object.values(DATA_LOP4)[0].baiGiang;
+  else                          baiGiang = DATA_LOP5[chuDeId]?.baiGiang || Object.values(DATA_LOP5)[0].baiGiang;
+
+  let phanHienTai = 0;
+
+  function hienThiPhan(idx) {
+    const phan = baiGiang.cacPhan[idx];
+    const tong = baiGiang.cacPhan.length;
+    document.getElementById('noi-dung-bai-giang').innerHTML = `
+      <div class="card animate-in">
+        <div class="card-title">${phan.tieuDe}</div>
+        <p class="lesson-text">${phan.noiDung}</p>
+        <div class="lesson-visual">${phan.svg}</div>
+        <div style="background:#fff9f0;border:2px dashed #ffd166;border-radius:14px;
+                    padding:14px 18px;margin-top:16px;font-weight:700;font-size:1.05rem;line-height:1.6;">
+          💡 Ghi nhớ: ${phan.ketLuan}
+        </div>
+      </div>`;
+    const pt = Math.round(((idx+1)/tong)*100);
+    document.getElementById('bar-giang').style.width  = pt+'%';
+    document.getElementById('label-giang').textContent = `Phần ${idx+1} / ${tong}`;
+    document.getElementById('btn-truoc').style.display = idx>0 ? 'inline-flex' : 'none';
+    const btnTiep = document.getElementById('btn-tiep');
+    if (idx===tong-1){ btnTiep.textContent='🚀 Bắt đầu làm bài!'; btnTiep.style.background='#06d6a0'; }
+    else             { btnTiep.textContent='Tiếp theo →'; btnTiep.style.background=''; }
+  }
+
+  function phanTiep() {
+    amChuyenTrang();
+    if (phanHienTai < baiGiang.cacPhan.length-1) { phanHienTai++; hienThiPhan(phanHienTai); window.scrollTo({top:0,behavior:'smooth'}); }
+    else window.location.href = 'exercise.html';
+  }
+  function phanTruoc() {
+    amBamNut();
+    if (phanHienTai>0){ phanHienTai--; hienThiPhan(phanHienTai); window.scrollTo({top:0,behavior:'smooth'}); }
+  }
+
+  /* ---- Đổi bài ---- */
+  function layChuDeLop(lop){
+    if(lop==='lop2') return CHU_DE_LOP2;
+    if(lop==='lop3') return CHU_DE_LOP3;
+    if(lop==='lop4') return CHU_DE_LOP4;
+    return CHU_DE_LOP5;
+  }
+  function doiBai(){
+    amBamNut();
+    const dsChuDe = layChuDeLop(lopHienTai);
+    const data    = layDuLieu();
+    const tenLop  = {'lop2':'🌟 Lớp 2','lop3':'🔢 Lớp 3','lop4':'📗 Lớp 4','lop5':'🚀 Lớp 5'}[lopHienTai];
+    document.getElementById('modal-tieu-de').textContent = tenLop+' — Chọn chủ đề';
+    document.getElementById('danh-sach-chu-de').innerHTML = dsChuDe.map(cd=>{
+      const td=data[lopHienTai]?.[cd.id]; const sao=td?hienThiSao(td.saoTot):'☆☆☆';
+      return `<div class="chu-de-card" onclick="chonChuDeVaoLesson('${cd.id}')">
+        <div class="chu-de-icon">${cd.icon}</div>
+        <div class="chu-de-ten">${cd.ten}</div>
+        <div class="chu-de-sao">${sao}</div></div>`;
+    }).join('');
+    document.getElementById('modal-chu-de').classList.add('hien');
+    document.body.style.overflow='hidden';
+  }
+  function chonChuDeVaoLesson(id){
+    amChuyenTrang();
+    sessionStorage.setItem('chu_de_hien_tai',id);
+    document.getElementById('modal-chu-de').classList.remove('hien');
+    document.body.style.overflow='';
+    location.reload();   // Tải lại trang với chủ đề mới
+  }
+  function dongModal(e){ if(e.target===document.getElementById('modal-chu-de')) dongModalBtn(); }
+  function dongModalBtn(){ document.getElementById('modal-chu-de').classList.remove('hien'); document.body.style.overflow=''; }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    capNhatHienThiKoKo(); capNhatNutAmThanh();
+    document.getElementById('tieu-de-bai-giang').textContent = `${baiGiang.icon} ${baiGiang.tieuDe}`;
+    const tenLop={'lop2':'Lớp 2','lop3':'Lớp 3','lop4':'Lớp 4','lop5':'Lớp 5'}[lopHienTai];
+    document.getElementById('mo-ta-lop').textContent = tenLop;
+    hienThiPhan(0);
+  });
+</script>
+</body>
+</html>
