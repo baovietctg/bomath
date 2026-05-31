@@ -111,7 +111,7 @@
     document.getElementById('modal-tieu-de').textContent = tenLop+' — Chọn chủ đề';
     document.getElementById('danh-sach-chu-de').innerHTML = dsChuDe.map(cd=>{
       const td=data[lopHienTai]?.[cd.id]; const sao=td?hienThiSao(td.saoTot):'☆☆☆';
-      return `<div class="chu-de-card" onclick="chonChuDeVaoLesson('${cd.id}')">
+      return `<div class="chu-de-card" onclick="choiChuDe('${cd.id}')">
         <div class="chu-de-icon">${cd.icon}</div>
         <div class="chu-de-ten">${cd.ten}</div>
         <div class="chu-de-sao">${sao}</div></div>`;
@@ -119,15 +119,9 @@
     document.getElementById('modal-chu-de').classList.add('hien');
     document.body.style.overflow='hidden';
   }
-  function chonChuDeVaoLesson(id){
-    amChuyenTrang();
-    sessionStorage.setItem('chu_de_hien_tai',id);
-    document.getElementById('modal-chu-de').classList.remove('hien');
-    document.body.style.overflow='';
-    location.reload();   // Tải lại trang với chủ đề mới
-  }
-  function dongModal(e){ if(e.target===document.getElementById('modal-chu-de')) dongModalBtn(); }
-  function dongModalBtn(){ document.getElementById('modal-chu-de').classList.remove('hien'); document.body.style.overflow=''; }
+  // choiChuDe đã xử lý trong app.js
+  function dongModal(e){ if(e.target===document.getElementById('modal-chu-de')) dongModalChuDe(); }
+  function dongModalBtn(){ dongModalChuDe(); }
 
   document.addEventListener('DOMContentLoaded',function(){
     capNhatHienThiKoKo(); capNhatNutAmThanh();

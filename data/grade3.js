@@ -901,7 +901,7 @@ const BAI_TAP_L3_LOI_VAN = [
   {id:'l3lv_12',loai:'dung_sai',cau:'"Ít hơn" trong bài toán thường dùng phép trừ',dapAn:'Đúng',goiY:'A ít hơn B: A = B − phần ít hơn'},
   {id:'l3lv_13',loai:'dung_sai',cau:'Câu trả lời bài toán phải có đơn vị',dapAn:'Đúng',goiY:'Ví dụ: "Có 15 học sinh" chứ không phải "Có 15"'},
   {id:'l3lv_14',loai:'dung_sai',cau:'Bài toán 2 bước cần làm 2 phép tính liên tiếp',dapAn:'Đúng',goiY:'Bước 1 → kết quả trung gian → Bước 2 → đáp số'},
-  {id:'l3lv_15',loai:'dung_sai',cau:'Nếu bài hỏi "tất cả bao nhiêu" luôn dùng cộng',dapAn:'Sai',goiY:'"Tất cả" có thể dùng nhân: 4 hộp × 5 cái = 20 cái'),
+  {id:'l3lv_15',loai:'dung_sai',cau:'Nếu bài hỏi "tất cả bao nhiêu" luôn dùng cộng',dapAn:'Sai',goiY:'Tất cả có thể dùng nhân: 4 hộp × 5 cái = 20 cái'},
   {id:'l3lv_16',loai:'chon_nhieu',cau:'Từ khóa nào cho thấy dùng phép trừ?',dapAn:['còn lại','ít hơn','bớt đi'],luaChon:['còn lại','thêm vào','ít hơn','bớt đi']},
   {id:'l3lv_17',loai:'chon_nhieu',cau:'Bài nào là bài toán 2 bước?',dapAn:['Mua 3 áo 50k, 2 quần 80k. Tổng tiền?','Lớp 40 HS, nghỉ 5. Còn bao nhiêu? Chia 5 tổ.'],luaChon:['Mua 3 áo 50k, 2 quần 80k. Tổng tiền?','Có 45 HS, bao nhiêu HS?','Lớp 40 HS, nghỉ 5. Còn bao nhiêu? Chia 5 tổ.','25+15=?']},
   {id:'l3lv_18',loai:'chon_nhieu',cau:'Bài toán "chia đều" thường dùng phép tính nào?',dapAn:['Phép chia'],luaChon:['Phép cộng','Phép trừ','Phép nhân','Phép chia']},

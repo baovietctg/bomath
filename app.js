@@ -286,6 +286,54 @@ function tungConfetti() {
 // PHẦN 8: ĐIỀU HƯỚNG
 // -----------------------------------------------
 
+
+// -----------------------------------------------
+// PHẦN 8B: MODAL CHỌN CHỦ ĐỀ (dùng chung mọi trang)
+// -----------------------------------------------
+
+/**
+ * Hiện modal chọn chủ đề cho lớp đang chọn.
+ * Hàm này phải chạy được từ mọi trang (lesson, exercise, index).
+ * Mỗi trang tự định nghĩa MAP_LOP, hàm này chỉ cần modal HTML có sẵn.
+ */
+function hienModalChuDe() {
+  const lop  = layLopHienTai();
+  const data = layDuLieu();
+
+  // Lấy danh sách chủ đề theo lớp — các biến này được khai báo trong grade*.js
+  let dsChuDe;
+  if      (lop === 'lop2') dsChuDe = CHU_DE_LOP2;
+  else if (lop === 'lop3') dsChuDe = CHU_DE_LOP3;
+  else if (lop === 'lop4') dsChuDe = CHU_DE_LOP4;
+  else                     dsChuDe = CHU_DE_LOP5;
+
+  const tenLop = { lop2:'🌟 Lớp 2', lop3:'🔢 Lớp 3', lop4:'📗 Lớp 4', lop5:'🚀 Lớp 5' }[lop];
+
+  const modalTieuDe = document.getElementById('modal-tieu-de');
+  const danhSach    = document.getElementById('danh-sach-chu-de');
+  if (!modalTieuDe || !danhSach) return; // Trang không có modal → bỏ qua
+
+  modalTieuDe.textContent = tenLop + ' — Chọn chủ đề';
+  danhSach.innerHTML = dsChuDe.map(cd => {
+    const td  = data[lop]?.[cd.id];
+    const sao = td ? hienThiSao(td.saoTot) : '☆☆☆';
+    return `<div class="chu-de-card" onclick="choiChuDe('${cd.id}')">
+      <div class="chu-de-icon">${cd.icon}</div>
+      <div class="chu-de-ten">${cd.ten}</div>
+      <div class="chu-de-sao">${sao}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('modal-chu-de').classList.add('hien');
+  document.body.style.overflow = 'hidden';
+}
+
+function dongModalChuDe() {
+  const modal = document.getElementById('modal-chu-de');
+  if (modal) modal.classList.remove('hien');
+  document.body.style.overflow = '';
+}
+
 function choiLop(lop) {
   amBamNut();
   sessionStorage.setItem('lop_hien_tai', lop);
@@ -300,7 +348,14 @@ function choiChuDe(idChuDe) {
 }
 
 function layLopHienTai()  { return sessionStorage.getItem('lop_hien_tai')  || 'lop3'; }
-function layChuDeHienTai(){ return sessionStorage.getItem('chu_de_hien_tai') || 'so_den_1000'; }
+function layChuDeHienTai() {
+  const saved = sessionStorage.getItem('chu_de_hien_tai');
+  if (saved) return saved;
+  // Default theo từng lớp — tránh dùng key không tồn tại
+  const lop = layLopHienTai();
+  const defaults = { lop2:'so_den_1000', lop3:'so_10000', lop4:'so_trieu', lop5:'so_tn' };
+  return defaults[lop] || 'so_den_1000';
+}
 
 // -----------------------------------------------
 // PHẦN 9: TIỆN ÍCH
