@@ -63,7 +63,6 @@
 <script src="data/grade2.js"></script>
 <script src="data/grade3.js"></script>
 <script src="data/grade4.js"></script>
-<script src="data/grade4.js"></script>
 <script src="data/grade5.js"></script>
 <script src="app.js"></script>
 <script>
@@ -166,14 +165,17 @@
   }
 
   // --- Dạng 3: Đúng / Sai ---
+  // Dùng data-chon="true/false" thay vì truyền boolean qua inline JS
+  // để tránh lỗi trình duyệt parse true/false như biến undefined
   function renderDungSai(c, idx, btnLabel) {
-    // dapAn: true hoặc false (boolean hoặc string 'true'/'false')
+    // Chuẩn hoá dapAn về string 'true' hoặc 'false'
+    const dapAnStr = String(c.dapAn) === 'true' ? 'true' : 'false';
     return `<div class="question-box animate-in">
       <div class="question-number">Câu ${idx+1} · Đúng hay Sai?</div>
       <div class="question-text">${c.cau}</div>
-      <div class="dung-sai-container">
-        <button class="ds-btn dung-opt" onclick="chonDungSai(this, true, ${c.dapAn})">✅ Đúng</button>
-        <button class="ds-btn sai-opt"  onclick="chonDungSai(this, false, ${c.dapAn})">❌ Sai</button>
+      <div class="dung-sai-container" data-dap-an="${dapAnStr}">
+        <button class="ds-btn dung-opt" data-chon="true"  onclick="chonDungSai(this)">✅ Đúng</button>
+        <button class="ds-btn sai-opt"  data-chon="false" onclick="chonDungSai(this)">❌ Sai</button>
       </div>
       <div class="feedback" id="feedback-box"></div>
       <div style="margin-top:18px;display:none;" id="btn-tiep-cau">
@@ -244,18 +246,25 @@
     document.getElementById('btn-tiep-cau').style.display='block';
   }
 
-  function chonDungSai(el, daChon, dapAnDung) {
+  function chonDungSai(el) {
     if(daTrLoi) return; daTrLoi = true;
-    // dapAnDung từ HTML là number 0/1 hoặc true/false
-    const laDung = (daChon === (dapAnDung===1||dapAnDung===true));
-    document.querySelectorAll('.ds-btn').forEach(b=>{ b.disabled=true; b.style.cursor='default'; });
-    el.classList.add(laDung?'ket-dung':'ket-sai');
-    el.classList.add(laDung?'bounce':'shake');
+    // Đọc giá trị đã chọn và đáp án đúng từ data-attribute (an toàn hơn inline JS)
+    const daChon    = el.dataset.chon === 'true';   // string 'true'/'false' → boolean
+    const container = el.closest('.dung-sai-container');
+    const dapAnDung = container.dataset.dapAn === 'true'; // string → boolean
+    const laDung    = daChon === dapAnDung;
+
+    document.querySelectorAll('.ds-btn').forEach(b => {
+      b.disabled = true;
+      b.style.cursor = 'default';
+    });
+    el.classList.add(laDung ? 'ket-dung' : 'ket-sai');
+    el.classList.add(laDung ? 'bounce' : 'shake');
     if(laDung) amDung(); else amSai();
-    const dapAnChuoi = (dapAnDung===1||dapAnDung===true) ? '✅ Đúng' : '❌ Sai';
+    const dapAnChuoi = dapAnDung ? '✅ Đúng' : '❌ Sai';
     hienThiFeedback(laDung, dapAnChuoi);
     if(laDung) soCauDung++;
-    document.getElementById('btn-tiep-cau').style.display='block';
+    document.getElementById('btn-tiep-cau').style.display = 'block';
   }
 
   function batTatChonNhieu(el) {
